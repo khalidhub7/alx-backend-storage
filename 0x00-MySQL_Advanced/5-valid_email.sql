@@ -1,15 +1,9 @@
--- trigger if an email changed
-DROP TRIGGER IF EXISTS reset_email;
-DELIMITER //
-
-CREATE TRIGGER reset_email
+-- trigger valid_email column
+-- if email is changed
+DELEMITER ::
+CREATE TRIGGER emailvalid
 BEFORE UPDATE ON users
 FOR EACH ROW
-	IF NEW.email <> OLD.email THEN
-	       	SET NEW.valid_email = 0;
-	ELSE
-		SET NEW.valid_email = 1;
-	END IF;
-//
-
-DELIMITER ;
+SET NEW.valid_email = IF(NEW.email = OLD.email, 1, 0)
+::
+DELEMITER ;
