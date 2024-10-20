@@ -1,12 +1,11 @@
--- Email validation to sent 
--- SQL script that creates a trigger 
+-- trigger if an email changed
 DELIMITER //
-
-CREATE TRIGGER check_before_update
-BEFORE UPDATE ON users
+CREATE TRIGGER reset_email
+AFTER UPDATE ON users
 FOR EACH ROW
-SET NEW.valid_email = IF(OLD.email <> NEW.email, 0, NEW.valid_email);
-
-//
-
+BEGIN
+    IF NEW.email <> OLD.email THEN
+        SET NEW.valid_email = 0;
+    END IF;
+END; //
 DELIMITER ;
