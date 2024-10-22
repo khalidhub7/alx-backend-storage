@@ -1,2 +1,3 @@
+#!/usr/bin/env python3
 # show all db
 show dbs
