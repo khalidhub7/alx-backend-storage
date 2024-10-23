@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""update topics where the name == name"""
-import pymongo
+""" pymongo basics """
 
 
 def schools_by_topic(mongo_collection, topic):
-    """update topics where the name == name"""
-    return mongo_collection.find({"topics": topic})
+    """
+search by topic
+    """
+    find = mongo_collection.find(
+        {'topics': topic}
+    )
+    return find
