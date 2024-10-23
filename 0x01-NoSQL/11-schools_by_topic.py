@@ -7,6 +7,5 @@ def schools_by_topic(mongo_collection, topic):
 search by topic
     """
     find = mongo_collection.find(
-        {'topics': topic}
-    )
+        {'topics': topic})
     return find
