@@ -10,6 +10,7 @@ r = redis.Redis(
 
 class Cache:
     """ store data in redis """
+
     def __init__(self):
         """ constructor """
         self._redis = r
