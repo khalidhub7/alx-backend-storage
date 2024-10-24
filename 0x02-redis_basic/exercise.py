@@ -9,7 +9,9 @@ r = redis.Redis(
 
 
 class Cache:
+    """ store data in redis """
     def __init__(self):
+        """ constructor """
         self._redis = r
         self._redis.flushdb()
 
@@ -17,6 +19,7 @@ class Cache:
             self, data: Union[
                 str, int, bytes, float
             ]) -> str:
+        """ store value in uuid key """
         keyy = str(uuid4())
         self._redis.set(keyy, data)
         return keyy
