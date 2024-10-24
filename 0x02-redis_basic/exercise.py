@@ -12,7 +12,7 @@ class Cache:
         """ constructor """
         self._redis = redis.Redis(
             host='localhost', port=6379)
-        self._redis.flushdb()
+        self._redis.flushdb(True)
 
     def store(
             self, data: Union[
