@@ -8,9 +8,10 @@ from typing import Union
 class Cache:
     """ store data in redis """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """ constructor """
-        self._redis = redis.Redis()
+        self._redis = redis.Redis(
+            host='localhost', port=6379)
         self._redis.flushdb()
 
     def store(
