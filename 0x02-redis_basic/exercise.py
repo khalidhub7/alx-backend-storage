@@ -4,16 +4,14 @@ import redis
 from uuid import uuid4
 from typing import Union
 
-r = redis.Redis(
-    host='localhost', port=6379)
-
 
 class Cache:
     """ store data in redis """
 
     def __init__(self):
         """ constructor """
-        self._redis = r
+        self._redis = redis.Redis(
+            host='localhost', port=6379)
         self._redis.flushdb()
 
     def store(
