@@ -28,38 +28,6 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
-class Cache:
-    """Class to store data in Redis."""
-
-    def __init__(self) -> None:
-        """Initialize the Cache instance."""
-        self._redis = redis.Redis(host='localhost', port=6379, decode_responses=True)
-        self._redis.flushdb()
-
-    @count_calls
-    @call_history
-    def store(self, data: Union[str, bytes, int, float]) -> str:
-        """Store a value in Redis and return the key."""
-        key = str(uuid4())
-        self._redis.set(key, data)
-        return key
-
-    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
-        """Retrieve a value from Redis."""
-        data = self._redis.get(key)
-        if data is None:
-            return None
-        return fn(data) if fn else data
-
-    def get_str(self, key: str) -> Union[str, None]:
-        """Retrieve a string value from Redis."""
-        return self.get(key, lambda x: x)
-
-    def get_int(self, key: str) -> Union[int, None]:
-        """Retrieve an integer value from Redis."""
-        return self.get(key, lambda x: int(x))
-
-
 def replay(method: Callable) -> None:
     """Display the history of calls of a particular function."""
     if method is None or not hasattr(method, '__self__'):
@@ -76,3 +44,44 @@ def replay(method: Callable) -> None:
     outputs = redis_client.lrange(outputs_key, 0, -1)
     for input_args, output in zip(inputs, outputs):
         print(f"{method_name}(*{input_args}) -> {output}")
+
+
+class Cache:
+    """Class to store data in Redis."""
+
+    def __init__(self) -> None:
+        """Initialize the Cache instance."""
+        self._redis = redis.Redis(
+            host='localhost',
+            port=6379,
+            decode_responses=True)
+        self._redis.flushdb()
+
+    @count_calls
+    @call_history
+    def store(self, data: Union[str, bytes, int, float]) -> str:
+        """Store a value in Redis and return the key."""
+        key = str(uuid4())
+        self._redis.set(key, data)
+        return key
+
+    def get(self,
+            key: str,
+            fn: Callable = None) -> Union[bytes,
+                                          int,
+                                          str,
+                                          float,
+                                          None]:
+        """Retrieve a value from Redis."""
+        data = self._redis.get(key)
+        if data is None:
+            return None
+        return fn(data) if fn else data
+
+    def get_str(self, key: str) -> Union[str, None]:
+        """Retrieve a string value from Redis."""
+        return self.get(key, lambda x: x)
+
+    def get_int(self, key: str) -> Union[int, None]:
+        """Retrieve an integer value from Redis."""
+        return self.get(key, lambda x: int(x))
