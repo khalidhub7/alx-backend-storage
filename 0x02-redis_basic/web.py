@@ -1,31 +1,35 @@
 #!/usr/bin/env python3
-""" Implementing an expiring web cache and tracker """
+"""Implementing an expiring web cache and tracker with Redis and requests"""
+
 import redis
 import requests
 from typing import Callable
 from functools import wraps
 
-
 r = redis.Redis()
 
-
 def count_requests(method: Callable) -> Callable:
-    """ count requests decorator """
+    """Decorator to count requests and cache responses."""
     @wraps(method)
-    def wrapper(url):
-        """ wrapper function """
-        cached_html = r.get("cached:{}".format(url))
-        if cached_html:
-            return cached_html.decode('utf-8')
-        html = method(url)
-        r.incr("count:{}".format(url))
-        r.setex("cached:{}".format(url), 10, html)
-        return html
+    def wrapper(url: str) -> str:
+        """Wrapper function to manage caching and counting."""
+        try:
+            cached_html = r.get(f"cached:{url}")
+            if cached_html:
+                return cached_html.decode('utf-8')
+            
+            html = method(url)
+            r.incr(f"count:{url}")
+            r.setex(f"cached:{url}", 10, html)
+            return html
+        except requests.RequestException as e:
+            print(f"Error fetching {url}: {e}")
+            return ""
     return wrapper
-
 
 @count_requests
 def get_page(url: str) -> str:
-    """ get page """
-    r = requests.get(url)
-    return r.text
+    """Fetch HTML content of the specified URL."""
+    response = requests.get(url)
+    response.raise_for_status()  # Raises an error for bad status codes
+    return response.text
