@@ -1,58 +1,36 @@
 #!/usr/bin/env python3
 """
-0x02-redis_basic
+web cache and tracker
 """
 import requests
 import redis
-from typing import Callable
 from functools import wraps
-from time import sleep
+
+store = redis.Redis()
 
 
-redisInstance = redis.Redis()
-redisInstance.flushdb()
-
-
-def callsCount(method: Callable) -> Callable:
-    """A decorator that takes a method callable argument
-    that increments the callsCount."""
-
+def count_url_access(method):
+    """ Decorator counting how many times
+    a URL is accessed """
     @wraps(method)
-    def incrCount(url: str) -> str:
-        """A method that increments the numbers of requests
-        done for a URL."""
+    def wrapper(url):
+        cached_key = "cached:" + url
+        cached_data = store.get(cached_key)
+        if cached_data:
+            return cached_data.decode("utf-8")
 
-        countKey = f"count:{url}"
-        storageKey = f"storage:{url}"
-        storageVal = redisInstance.get(storageKey)
-        if storageVal:
-            redisInstance.incr(countKey)
-            return storageVal.decode("utf-8")
-        call = method(url)
-        redisInstance.setex(storageKey, 10, call)
-        redisInstance.set(countKey, 1)
-        return call
+        count_key = "count:" + url
+        html = method(url)
 
-    return incrCount
+        store.incr(count_key)
+        store.set(cached_key, html)
+        store.expire(cached_key, 10)
+        return html
+    return wrapper
 
 
-@callsCount
+@count_url_access
 def get_page(url: str) -> str:
-    """A method that uses the requests module to obtain the HTML
-    content of a particular URL and returns it."""
-    try:
-        response = requests.get(url).text
-        return response
-    except requests.RequestException as e:
-        return
-
-
-if __name__ == "__main__":
-    url = "http://slowwly.robertomurray.co.uk"
-    get_page(url)
-    get_page(url)
-    get_page(url)
-    get_page(url)
-    print(redisInstance.get(f"storage:{url}"))
-    sleep(12)
-    print(redisInstance.get(f"storage:{url}"))
+    """ Returns HTML content of a url """
+    res = requests.get(url)
+    return res.text
