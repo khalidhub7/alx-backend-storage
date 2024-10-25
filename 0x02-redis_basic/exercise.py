@@ -7,7 +7,7 @@ from typing import Union, Callable, Any
 
 
 def count_calls(method: Callable) -> Callable:
-    """Decorator to count calls to a method."""
+    """Decorator to count calls to a method"""
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs) -> Any:
         self._redis.incr(method.__qualname__)
