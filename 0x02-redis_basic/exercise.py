@@ -41,3 +41,4 @@ store data to redis-server
         """ int value """
         return int(
             self.get(key, int))
+
