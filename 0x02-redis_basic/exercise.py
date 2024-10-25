@@ -1,34 +1,8 @@
 #!/usr/bin/env python3
 """Redis basics with improved error handling and functionality."""
 import redis
-import functools
 from uuid import uuid4
-from typing import Union, Callable, Any
-
-
-def count_calls(method: Callable) -> Callable:
-    """Decorator to count calls to a method."""
-    @functools.wraps(method)
-    def wrapper(self, *args, **kwargs) -> Any:
-        if isinstance(self._redis, redis.Redis):
-            self._redis.incr(method.__qualname__)
-        return method(self, *args, **kwargs)
-    return wrapper
-
-
-def call_history(method: Callable) -> Callable:
-    """Decorator to store history of inputs and outputs of a function."""
-    @functools.wraps(method)
-    def wrapper(self, *args, **kwargs) -> Any:
-        inputs_key = f"{method.__qualname__}:inputs"
-        outputs_key = f"{method.__qualname__}:outputs"
-        if isinstance(self._redis, redis.Redis):
-            self._redis.rpush(inputs_key, str(args))
-        result = method(self, *args, **kwargs)
-        if isinstance(self._redis, redis.Redis):
-            self._redis.rpush(outputs_key, str(result))
-        return result
-    return wrapper
+from typing import Union, Callable
 
 
 class Cache:
@@ -39,9 +13,7 @@ class Cache:
         self._redis = redis.Redis(host='localhost', port=6379)
         self._redis.flushdb()
 
-    @call_history
-    @count_calls
-    def store(self, data: Union[str, int, bytes, float]) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store a value in Redis and return the key."""
         key = str(uuid4())
         self._redis.set(key, data)
