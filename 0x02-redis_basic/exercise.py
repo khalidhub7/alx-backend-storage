@@ -5,6 +5,7 @@ import functools
 from uuid import uuid4
 from typing import Union, Callable
 
+
 def count_calls(method: Callable) -> Callable:
     """ count calls of method """
     @functools.wraps(method)
@@ -12,6 +13,7 @@ def count_calls(method: Callable) -> Callable:
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
+
 
 def call_history(method: Callable) -> Callable:
     """ store history of inputs and outputs of a function """
@@ -24,6 +26,7 @@ def call_history(method: Callable) -> Callable:
         self._redis.rpush(outputs_key, str(result))
         return result
     return wrapper
+
 
 class Cache:
     """ store data in redis """
@@ -44,7 +47,13 @@ class Cache:
         self._redis.set(f"{key}:type", type(data).__name__)
         return key
 
-    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
+    def get(self,
+            key: str,
+            fn: Callable = None) -> Union[bytes,
+                                          int,
+                                          str,
+                                          float,
+                                          None]:
         """ get value from redis """
         data = self._redis.get(key)
         if data is None:
@@ -80,6 +89,7 @@ class Cache:
         except ValueError:
             return None
 
+
 def replay(method: Callable) -> None:
     """Display the history of calls of a particular function."""
     redis_client = method.__self__._redis
@@ -90,4 +100,5 @@ def replay(method: Callable) -> None:
     outputs = redis_client.lrange(outputs_key, 0, -1)
     print(f"{method_name} was called {len(inputs)} times:")
     for input_args, output in zip(inputs, outputs):
-        print(f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
+        print(
+            f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
