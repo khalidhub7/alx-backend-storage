@@ -34,16 +34,18 @@ tore history of inputs and outputs for a function
 
 
 def replay(method: Callable):
-    """Display the history of calls for a function."""
+    """ replay """
     redis_instance = method.__self__._redis
     method_key = method.__qualname__
-    call_count = redis_instance.get(method_key).decode('utf-8')
+    call_count = int(redis_instance.get(method_key) or 0)
     inputs = redis_instance.lrange(f"{method_key}:inputs", 0, -1)
     outputs = redis_instance.lrange(f"{method_key}:outputs", 0, -1)
+
     print(f"{method_key} was called {call_count} times:")
     for input_data, output_data in zip(inputs, outputs):
-        print(
-            f"{method_key}(*{input_data.decode('utf-8')}) -> {output_data.decode('utf-8')}")
+        input_str = input_data.decode("utf-8")
+        output_str = output_data.decode("utf-8")
+        print(f"{method_key}(*{input_str}) -> {output_str}")
 
 
 class Cache:
@@ -84,4 +86,3 @@ store data to redis-server
         """ int value """
         return int(
             self.get(key, int))
-
