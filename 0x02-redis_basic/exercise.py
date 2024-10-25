@@ -5,7 +5,6 @@ import functools
 from uuid import uuid4
 from typing import Union, Callable
 
-
 def count_calls(method: Callable) -> Callable:
     """ count calls of method """
     @functools.wraps(method)
@@ -13,7 +12,6 @@ def count_calls(method: Callable) -> Callable:
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
-
 
 class Cache:
     """ store data in redis """
@@ -25,44 +23,46 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
-    def store(
-            self, data: Union[
-                str, int, bytes, float
-            ]) -> str:
+    def store(self, data: Union[str, int, bytes, float]) -> str:
         """ store value in uuid key """
-        keyy = str(uuid4())
-        self._redis.set(keyy, data)
+        key = str(uuid4())
+        self._redis.set(key, data)
         # store data type in redis itself
-        self._redis.set(f"{keyy}:type", type(data).__name__)
-        return keyy
+        self._redis.set(f"{key}:type", type(data).__name__)
+        return key
 
-    def get(self, key: str, fn: Callable = None) -> Union[
-            bytes, int, str, float, None]:
+    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
         """ get value from redis """
         data = self._redis.get(key)
         if data is None:
             return None
-        elif fn is not None and data is not None:
+
+        if fn:
             return fn(data)
 
+        # Get the type and convert accordingly
         data_type = self._redis.get(f"{key}:type")
         if data_type == b'str':
-            return self.get_str(key)
+            return data.decode('utf-8')
         elif data_type == b'int':
-            return self.get_int(key)
-        else:
-            return data
+            return int(data)
+        elif data_type == b'float':
+            return float(data)
+        return data
 
     def get_str(self, key: str) -> Union[str, None]:
         """ convert value to str """
-        data = self.get(key, lambda i: i.decode('utf-8'))
+        data = self._redis.get(key)
         if data is None:
             return None
-        return data
+        return data.decode('utf-8')
 
     def get_int(self, key: str) -> Union[int, None]:
         """ convert value to int """
+        data = self._redis.get(key)
+        if data is None:
+            return None
         try:
-            return self.get(key, int)
+            return int(data)
         except ValueError:
             return None
