@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Redis basics with method call counting."""
+"""Redis basics with method call counting and replay functionality."""
 import redis
 import functools
 from uuid import uuid4
