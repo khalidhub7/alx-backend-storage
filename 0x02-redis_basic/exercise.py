@@ -5,6 +5,7 @@ import functools
 from uuid import uuid4
 from typing import Union, Callable
 
+
 def count_calls(method: Callable) -> Callable:
     """ count calls of method """
     @functools.wraps(method)
@@ -12,6 +13,20 @@ def count_calls(method: Callable) -> Callable:
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """ store history of inputs and outputs of a function """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        inputs_key = f"{method.__qualname__}:inputs"
+        outputs_key = f"{method.__qualname__}:outputs"
+        self._redis.rpush(inputs_key, str(args))
+        result = method(self, *args, **kwargs)
+        self._redis.rpush(outputs_key, str(result))
+        return result
+    return wrapper
+
 
 class Cache:
     """ store data in redis """
@@ -22,6 +37,7 @@ class Cache:
             host='localhost', port=6379)
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, int, bytes, float]) -> str:
         """ store value in uuid key """
@@ -31,7 +47,13 @@ class Cache:
         self._redis.set(f"{key}:type", type(data).__name__)
         return key
 
-    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
+    def get(self,
+            key: str,
+            fn: Callable = None) -> Union[bytes,
+                                          int,
+                                          str,
+                                          float,
+                                          None]:
         """ get value from redis """
         data = self._redis.get(key)
         if data is None:
