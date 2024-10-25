@@ -21,15 +21,26 @@ class Cache:
         """ store value in uuid key """
         keyy = str(uuid4())
         self._redis.set(keyy, data)
+        # store data type in redis itself
+        self._redis.set(f"{keyy}:type", type(data).__name__)
         return keyy
 
     def get(self, key: str, fn: Callable = None) -> Union[
             bytes, int, str, float, None]:
         """ get value from redis """
         data = self._redis.get(key)
-        if fn is not None and data is not None:
+        if data is None:
+            return None
+        elif fn is not None and data is not None:
             return fn(data)
-        return data
+
+        data_type = self._redis.get(f"{key}:type")
+        if data_type == b'str':
+            return self.get_str(key)
+        elif data_type == b'int':
+            return self.get_int(key)
+        else:
+            return data
 
     def get_str(self, key: str) -> Union[str, None]:
         """ convert value to str """
