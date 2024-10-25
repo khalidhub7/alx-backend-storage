@@ -6,23 +6,21 @@ from functools import wraps
 from typing import Union, Callable
 
 
-def count_calls(
-        method: Callable) -> Callable:
+def count_calls(method: Callable) -> Callable:
     """
-count calls to a method using Redis
+Count calls to a method using Redis
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         key = method.__qualname__
         self._redis.incr(key)
-        return method(
-            self, *args, **kwargs)
+        return method(self, *args, **kwargs)
     return wrapper
 
 
 def call_history(method: Callable) -> Callable:
     """
-Store history of inputs and outputs for a function
+tore history of inputs and outputs for a function
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
