@@ -47,7 +47,13 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
+    def get(self,
+            key: str,
+            fn: Callable = None) -> Union[bytes,
+                                          int,
+                                          str,
+                                          float,
+                                          None]:
         """Retrieve a value from Redis."""
         data = self._redis.get(key)
         if data is None:
@@ -78,4 +84,5 @@ def replay(method: Callable) -> None:
     inputs = redis_client.lrange(inputs_key, 0, -1)
     outputs = redis_client.lrange(outputs_key, 0, -1)
     for input_args, output in zip(inputs, outputs):
-        print(f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
+        print(
+            f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
