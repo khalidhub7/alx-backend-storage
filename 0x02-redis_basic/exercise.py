@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 """ redis basics """
 import redis
+import functools
 from uuid import uuid4
 from typing import Union, Callable
+
+
+def count_calls(method: Callable) -> Callable:
+    """ count calls of method """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -14,6 +24,7 @@ class Cache:
             host='localhost', port=6379)
         self._redis.flushdb()
 
+    @count_calls
     def store(
             self, data: Union[
                 str, int, bytes, float
