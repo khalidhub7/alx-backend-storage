@@ -33,8 +33,7 @@ class Cache:
 
     def __init__(self) -> None:
         """ constructor """
-        self._redis = redis.Redis(
-            host='localhost', port=6379)
+        self._redis = redis.Redis(host='localhost', port=6379)
         self._redis.flushdb()
 
     @count_calls
@@ -47,13 +46,7 @@ class Cache:
         self._redis.set(f"{key}:type", type(data).__name__)
         return key
 
-    def get(self,
-            key: str,
-            fn: Callable = None) -> Union[bytes,
-                                          int,
-                                          str,
-                                          float,
-                                          None]:
+    def get(self, key: str, fn: Callable = None) -> Union[bytes, int, str, float, None]:
         """ get value from redis """
         data = self._redis.get(key)
         if data is None:
@@ -98,7 +91,7 @@ def replay(method: Callable) -> None:
     outputs_key = f"{method_name}:outputs"
     inputs = redis_client.lrange(inputs_key, 0, -1)
     outputs = redis_client.lrange(outputs_key, 0, -1)
+
     print(f"{method_name} was called {len(inputs)} times:")
     for input_args, output in zip(inputs, outputs):
-        print(
-            f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
+        print(f"{method_name}(*{input_args.decode('utf-8')}) -> {output.decode('utf-8')}")
