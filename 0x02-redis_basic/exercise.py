@@ -5,9 +5,8 @@ import functools
 from uuid import uuid4
 from typing import Union, Callable, Any
 
-
 def count_calls(method: Callable) -> Callable:
-    """Decorator to count calls to a method"""
+    """Decorator to count calls to a method."""
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs) -> Any:
         self._redis.incr(method.__qualname__)
@@ -68,10 +67,10 @@ class Cache:
     def get(self,
             key: str,
             fn: Callable = None) -> Union[bytes,
-                                          int,
-                                          str,
-                                          float,
-                                          None]:
+                int,
+                str,
+                float,
+                None]:
         """Retrieve a value from Redis."""
         data = self._redis.get(key)
         if data is None:
@@ -80,7 +79,7 @@ class Cache:
 
     def get_str(self, key: str) -> Union[str, None]:
         """Retrieve a string value from Redis."""
-        return self.get(key, lambda x: x)
+        return self.get(key, lambda x: x.decode("utf-8"))
 
     def get_int(self, key: str) -> Union[int, None]:
         """Retrieve an integer value from Redis."""
