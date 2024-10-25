@@ -1,45 +1,58 @@
 #!/usr/bin/env python3
-""" Track URL access and cache content with expiration """
-
-import redis
+"""
+0x02-redis_basic
+"""
 import requests
-from functools import wraps
+import redis
 from typing import Callable
+from functools import wraps
+from time import sleep
 
-redis_client = redis.Redis()
+
+redisInstance = redis.Redis()
+redisInstance.flushdb()
 
 
-def count_requests(method: Callable) -> Callable:
-    """Decorator to count requests to a URL"""
+def callsCount(method: Callable) -> Callable:
+    """A decorator that takes a method callable argument
+    that increments the callsCount."""
 
     @wraps(method)
-    def wrapper(url: str) -> str:
-        redis_client.incr(f"count:{url}")
-        return method(url)
-    return wrapper
+    def incrCount(url: str) -> str:
+        """A method that increments the numbers of requests
+        done for a URL."""
+
+        countKey = f"count:{url}"
+        storageKey = f"storage:{url}"
+        storageVal = redisInstance.get(storageKey)
+        if storageVal:
+            redisInstance.incr(countKey)
+            return storageVal.decode("utf-8")
+        call = method(url)
+        redisInstance.setex(storageKey, 10, call)
+        redisInstance.set(countKey, 1)
+        return call
+
+    return incrCount
 
 
-def cache_with_expiration(timeout: int) -> Callable:
-    """Decorator to cache request result with expiration"""
-
-    def decorator(method: Callable) -> Callable:
-        @wraps(method)
-        def wrapper(url: str) -> str:
-            cached = redis_client.get(url)
-            if cached:
-                return cached.decode("utf-8")
-
-            result = method(url)
-            redis_client.setex(url, timeout, result)
-            return result
-        return wrapper
-    return decorator
-
-
-@count_requests
-@cache_with_expiration(10)
+@callsCount
 def get_page(url: str) -> str:
-    """Fetch and return HTML content of a URL"""
-    response = requests.get(url)
-    return response.text
+    """A method that uses the requests module to obtain the HTML
+    content of a particular URL and returns it."""
+    try:
+        response = requests.get(url).text
+        return response
+    except requests.RequestException as e:
+        return
 
+
+if __name__ == "__main__":
+    url = "http://slowwly.robertomurray.co.uk"
+    get_page(url)
+    get_page(url)
+    get_page(url)
+    get_page(url)
+    print(redisInstance.get(f"storage:{url}"))
+    sleep(12)
+    print(redisInstance.get(f"storage:{url}"))
