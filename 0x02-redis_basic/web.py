@@ -42,10 +42,3 @@ def get_page(url: str) -> str:
     """
     response = requests.get(url)
     return response.text
-
-
-if __name__ == "__main__":
-    test_url = "http://slowwly.robertomurray.co.uk/delay/2000/url/http://www.example.com"
-    print(get_page(test_url))
-    print(get_page(test_url))
-
