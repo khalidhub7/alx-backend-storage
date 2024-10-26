@@ -17,16 +17,16 @@ count requests decorator
     @wraps(method)
     def wrapper(url: str) -> str:
         """ wrapper function """
-        r.incr("count:{}".format(url))
+        r.incr("count:{}".format(str(url)))
 
         cached_html = r.get(
-            "cached:{}".format(url))
+            "cached:{}".format(str(url)))
         if cached_html:
             return cached_html.decode('utf-8')
-        html = method(url)
+        html = method(str(url))
         r.setex("cached:{}"
                 .format(url), 10, html)
-        return html
+        return str(html)
     return wrapper
 
 
