@@ -1,36 +1,46 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-#!/usr/bin/env python3
 """
-an expiring web cache and tracker
+web.py - A simple web page fetcher with caching
+
+Usage:
+    from web import get_page
+    html = get_page('http://example.com')
 """
+
 import requests
-import redis
 from functools import wraps
-r = redis.Redis()
+from cachetools import cached, TTLCache
 
+# Create a cache with a TTL of 10 seconds
+cache = TTLCache(maxsize=100, ttl=10)
 
-def count_url_access(method):
-    """
-count times that a URL is accessed
-    """
-    @wraps(method)
-    def wrapper(url):
-        key_cache = "cached:" + url
-        data_cache = r.get(key_cache)
-        if data_cache:
-            return data_cache.decode("utf-8")
-        key_count = "count:" + url
-        html = method(url)
-        r.incr(key_count)
-        r.set(key_cache, html, ex=10)
-        return html
-    return wrapper
+def cache_result(ttl=10):
+    """Decorator to cache the result of a function for a given TTL"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            key = f"count:{args[0]}"
+            result = cache.get(key)
+            if result is None:
+                result = func(*args, **kwargs)
+                cache[key] = result
+            return result
+        return wrapper
+    return decorator
 
-
-@count_url_access
+@cache_result(ttl=10)
 def get_page(url: str) -> str:
     """
-html of cached site
+    Fetch the HTML content of a given URL and return it.
+
+    Args:
+        url (str): The URL to fetch
+
+    Returns:
+        str: The HTML content of the page
     """
-    req = requests.get(url)
-    return req.text
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
