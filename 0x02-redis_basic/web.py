@@ -1,25 +1,42 @@
 #!/usr/bin/env python3
 """
-Implementing an expiring web cache and tracker
+implementing an expiring web cache and tracker
 """
 import redis
 import requests
+from typing import Callable
+from functools import wraps
+r = redis.Redis()
+r.flushall()
 
-# Redis connection
-r = redis.Redis(host='localhost', port=6379, db=0)
 
+def count_requests(
+        method: Callable) -> Callable:
+    """
+count requests decorator
+    """
+    @wraps(method)
+    def wrapper(url: str) -> str:
+        """ wrapper function """
+        r.incr("count:{}".format(str(url)))
+
+        cached_html = r.get(
+            "cached:{}".format(str(url)))
+        if cached_html:
+            return cached_html.decode('utf-8')
+
+        html = method(str(url)).decode('utf-8')
+        r.setex("cached:{}"
+                .format(url), 10, html)
+        return r.get(
+            "cached:{}".format(str(url))
+        ).decode('utf-8')
+    return wrapper
+
+
+@count_requests
 def get_page(url: str) -> str:
-    """ Get page content and track requests """
-    # Check if content is cached
-    cached_html = r.get(f"cached:{url}")
-    if cached_html:
-        return cached_html.decode('utf-8')
-
-    # Cache miss, increment count and fetch from the web
-    r.incr(f"count:{url}")
-    response = requests.get(url)
-    html = response.text
-
-    # Cache the content for 10 seconds
-    r.setex(f"cached:{url}", 10, html)
-    return html
+    """ get page """
+    r = requests.get(url)
+    return r.text.decode(
+        'utf-8')
