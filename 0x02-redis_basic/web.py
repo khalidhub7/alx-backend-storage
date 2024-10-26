@@ -1,44 +1,54 @@
 #!/usr/bin/env python3
 """
-An expiring web cache and tracker
+web.py
+
+This module contains the get_page function that fetches HTML content from a URL,
+tracks access count, and caches the result for a specified duration.
 """
+
 import requests
 import redis
 from functools import wraps
-from typing import Callable
 
-store = redis.Redis()
+# Redis connection
+r = redis.Redis()
 
-def cache_and_count(expire: int = 10) -> Callable:
+def cache_page(expiration=10):
     """
-    Decorator to cache the HTML response of a URL and count the number of times accessed.
+    Decorator to cache the HTML content of a URL for a given expiration time
+    and track the number of times the URL was accessed.
+
+    Args:
+        expiration (int): Time in seconds for the cache to expire.
+
+    Returns:
+        Function: A wrapped function with caching and tracking enabled.
     """
-    def decorator(method: Callable[[str], str]) -> Callable[[str], str]:
-        @wraps(method)
-        def wrapper(url: str) -> str:
-            key_cache = f"cached:{url}"
+    def decorator(func):
+        @wraps(func)
+        def wrapper(url):
             key_count = f"count:{url}"
-
-            # Attempt to retrieve from cache
-            cached_data = store.get(key_cache)
-            if cached_data:
-                return cached_data
-
-            # If not cached, fetch and store in cache
-            html = method(url)
-            store.incr(key_count)
-            store.set(key_cache, html, ex=expire)
-
-            return html
-
+            key_cache = f"cache:{url}"
+            r.incr(key_count)
+            cached_content = r.get(key_cache)
+            if cached_content:
+                return cached_content.decode("utf-8")
+            result = func(url)
+            r.setex(key_cache, expiration, result)
+            return result
         return wrapper
     return decorator
 
-
-@cache_and_count(expire=10)
+@cache_page()
 def get_page(url: str) -> str:
     """
-    Fetches the HTML content of a URL using the requests module.
+    Fetches the HTML content of a URL.
+
+    Args:
+        url (str): The URL to fetch.
+
+    Returns:
+        str: HTML content of the URL.
     """
     response = requests.get(url)
     return response.text
