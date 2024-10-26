@@ -36,7 +36,6 @@ def get_page(url: str) -> str:
     Fetches the HTML content of a URL using the requests module.
     """
     response = requests.get(url)
-    response.raise_for_status()
     return response.text
 
 
