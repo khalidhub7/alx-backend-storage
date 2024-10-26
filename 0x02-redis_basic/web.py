@@ -15,7 +15,7 @@ def count_requests(
 count requests decorator
     """
     @wraps(method)
-    def wrapper(url):
+    def wrapper(url: str) -> str:
         """ wrapper function """
         cached_html = r.get(
             "cached:{}".format(url))
