@@ -13,9 +13,6 @@ count calls of each function
     """
     @wraps(methood)
     def wrapper(self, *args, **kwargs):
-        """
-wrapper method to count calls
-        """
         keyy = methood.__qualname__
         self._redis.incr(keyy)
         return methood(
