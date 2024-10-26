@@ -48,7 +48,7 @@ def replay(method: Callable):
     """ replay """
     _redis = method.__self__._redis
     method_name = method.__qualname__
-    calls = _redis.get(method_name) or 0
+    calls = int(_redis.get(method_name)) or 0
     inputs = _redis.lrange(
         '{}:inputs'.format(method_name),
         0, -1)
