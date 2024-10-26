@@ -2,11 +2,9 @@
 """
 implementing an expiring web cache and tracker
 """
-import redis
 import requests
 from typing import Callable
 from functools import wraps
-r = redis.Redis()
 
 
 def count_requests(
@@ -17,6 +15,7 @@ count requests decorator
     @wraps(method)
     def wrapper(url: str) -> str:
         """ wrapper function """
+        r = method.__self__._redis
         r.incr("count:{}"
                .format(str(url)))
         cached_html = r.get(
