@@ -24,10 +24,13 @@ count requests decorator
             "cached:{}".format(str(url)))
         if cached_html:
             return cached_html.decode('utf-8')
-        html = method(str(url))
+
+        html = method(str(url)).decode('utf-8')
         r.setex("cached:{}"
                 .format(url), 10, html)
-        return str(html)
+        return r.get(
+            "cached:{}".format(str(url))
+        ).decode('utf-8')
     return wrapper
 
 
@@ -35,4 +38,5 @@ count requests decorator
 def get_page(url: str) -> str:
     """ get page """
     r = requests.get(url)
-    return r.text
+    return r.text.decode(
+        'utf-8')
