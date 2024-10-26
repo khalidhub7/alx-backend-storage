@@ -7,7 +7,6 @@ import requests
 from typing import Callable
 from functools import wraps
 r = redis.Redis()
-r.flushall()
 
 
 def count_requests(
@@ -25,7 +24,6 @@ count requests decorator
         if cached_html:
             return cached_html.decode(
                 'utf-8')
-
         html = method(str(url)).decode(
             'utf-8')
         r.setex("cached:{}"
@@ -42,4 +40,3 @@ def get_page(url: str) -> str:
     r = requests.get(url)
     return r.text.decode(
         'utf-8')
-
