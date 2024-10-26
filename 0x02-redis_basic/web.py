@@ -1,54 +1,36 @@
+
 #!/usr/bin/env python3
 """
-web.py
-
-This module contains the get_page function that fetches HTML content from a URL,
-tracks access count, and caches the result for a specified duration.
+an expiring web cache and tracker
 """
-
 import requests
 import redis
 from functools import wraps
-
-# Redis connection
 r = redis.Redis()
 
-def cache_page(expiration=10):
+
+def count_url_access(method):
     """
-    Decorator to cache the HTML content of a URL for a given expiration time
-    and track the number of times the URL was accessed.
-
-    Args:
-        expiration (int): Time in seconds for the cache to expire.
-
-    Returns:
-        Function: A wrapped function with caching and tracking enabled.
+count times that a URL is accessed
     """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(url):
-            key_count = f"count:{url}"
-            key_cache = f"cache:{url}"
-            r.incr(key_count)
-            cached_content = r.get(key_cache)
-            if cached_content:
-                return cached_content.decode("utf-8")
-            result = func(url)
-            r.setex(key_cache, expiration, result)
-            return result
-        return wrapper
-    return decorator
+    @wraps(method)
+    def wrapper(url):
+        key_cache = "cached:" + url
+        data_cache = r.get(key_cache)
+        if data_cache:
+            return data_cache.decode("utf-8")
+        key_count = "count:" + url
+        html = method(url)
+        r.incr(key_count)
+        r.set(key_cache, html, ex=10)
+        return html
+    return wrapper
 
-@cache_page()
+
+@count_url_access
 def get_page(url: str) -> str:
     """
-    Fetches the HTML content of a URL.
-
-    Args:
-        url (str): The URL to fetch.
-
-    Returns:
-        str: HTML content of the URL.
+html of cached site
     """
-    response = requests.get(url)
-    return response.text
+    req = requests.get(url)
+    return req.text
