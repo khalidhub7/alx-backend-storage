@@ -20,7 +20,8 @@ count calls of each function
     return wrapper
 
 
-def call_history(method: Callable) -> Callable:
+def call_history(method: Callable
+                 ) -> Callable:
     """
 store history of inputs and outputs for a function
     """
