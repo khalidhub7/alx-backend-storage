@@ -6,46 +6,63 @@ from functools import wraps
 from typing import Union, Callable
 
 
-def count_calls(method: Callable) -> Callable:
+def count_calls(
+        methood: Callable) -> Callable:
     """
-Count calls to a method using Redis
+count calls of each function
     """
-    @wraps(method)
+    @wraps(methood)
     def wrapper(self, *args, **kwargs):
-        key = method.__qualname__
-        self._redis.incr(key)
-        return method(self, *args, **kwargs)
+        """
+wrapper method to count calls
+        """
+        keyy = methood.__qualname__
+        self._redis.incr(keyy)
+        return methood(
+            self, *args, **kwargs)
     return wrapper
 
 
 def call_history(method: Callable) -> Callable:
     """
-tore history of inputs and outputs for a function
+store history of inputs and outputs for a function
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        input_key = f"{method.__qualname__}:inputs"
-        output_key = f"{method.__qualname__}:outputs"
-        self._redis.rpush(input_key, str(args))
+        """
+rpush: like append
+        """
+        name = method.__qualname__
+        # push inputs
+        self._redis.rpush(
+            '{}:inputs'.format(name), str(args))
+        # push outputs
         output = method(self, *args, **kwargs)
-        self._redis.rpush(output_key, output)
+        self._redis.rpush(
+            '{}:outputs'.format(name), output)
         return output
     return wrapper
 
 
 def replay(method: Callable):
     """ replay """
-    redis_instance = method.__self__._redis
-    method_key = method.__qualname__
-    call_count = int(redis_instance.get(method_key) or 0)
-    inputs = redis_instance.lrange(f"{method_key}:inputs", 0, -1)
-    outputs = redis_instance.lrange(f"{method_key}:outputs", 0, -1)
-
-    print(f"{method_key} was called {call_count} times:")
-    for input_data, output_data in zip(inputs, outputs):
-        input_str = input_data.decode("utf-8")
-        output_str = output_data.decode("utf-8")
-        print(f"{method_key}(*{input_str}) -> {output_str}")
+    _redis = method.__self__._redis
+    method_name = method.__qualname__
+    calls = _redis.get(method_name) or 0
+    inputs = _redis.lrange(
+        '{}:inputs'.format(method_name),
+        0, -1)
+    outputs = _redis.lrange(
+        '{}:outputs'.format(method_name),
+        0, -1)
+    print("{} was called {} times:"
+          .format(method_name, calls))
+    for inp, out in zip(inputs, outputs):
+        input_str = inp.decode('utf-8')
+        output_str = out.decode('utf-8')
+        print('{}(*{}) -> {}'.format(
+            method_name, input_str,
+            output_str))
 
 
 class Cache:
@@ -68,9 +85,12 @@ store data to redis-server
         self._redis.set(str(key), data)
         return key
 
-    def get(self, key: str, fn: Callable = None) -> Union[
+    def get(self, key: str,
+            fn: Callable = None) -> Union[
             str, bytes, int, float]:
-        """ get value from redis server """
+        """
+get value from redis server
+        """
         value = self._redis.get(key)
         if value is not None:
             if fn:
