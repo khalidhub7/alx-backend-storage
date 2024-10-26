@@ -6,16 +6,16 @@ from functools import wraps
 from typing import Union, Callable
 
 
-def count_calls(
-        methood: Callable) -> Callable:
+def count_calls(method: Callable
+                ) -> Callable:
     """
 count calls of each function
     """
-    @wraps(methood)
+    @wraps(method)
     def wrapper(self, *args, **kwargs):
-        keyy = methood.__qualname__
-        self._redis.incr(keyy)
-        return methood(
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(
             self, *args, **kwargs)
     return wrapper
 
