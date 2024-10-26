@@ -5,32 +5,37 @@ An expiring web cache and tracker
 import requests
 import redis
 from functools import wraps
+from typing import Callable
 
 store = redis.Redis()
 
-def count_url_access(method):
+def cache_and_count(expire: int = 10) -> Callable:
     """
-    Decorator to count how many times a URL is accessed and cache the result.
+    Decorator to cache the HTML response of a URL and count the number of times accessed.
     """
-    @wraps(method)
-    def wrapper(url: str) -> str:
-        key_cache = f"cached:{url}"
-        cached_data = store.get(key_cache)
-        if cached_data:
-            return cached_data
+    def decorator(method: Callable[[str], str]) -> Callable[[str], str]:
+        @wraps(method)
+        def wrapper(url: str) -> str:
+            key_cache = f"cached:{url}"
+            key_count = f"count:{url}"
 
-        key_count = f"count:{url}"
-        html = method(url)
+            # Attempt to retrieve from cache
+            cached_data = store.get(key_cache)
+            if cached_data:
+                return cached_data
 
-        store.incr(key_count)
-        store.set(key_cache, html, ex=10)
+            # If not cached, fetch and store in cache
+            html = method(url)
+            store.incr(key_count)
+            store.set(key_cache, html, ex=expire)
 
-        return html
+            return html
 
-    return wrapper
+        return wrapper
+    return decorator
 
 
-@count_url_access
+@cache_and_count(expire=10)
 def get_page(url: str) -> str:
     """
     Fetches the HTML content of a URL using the requests module.
@@ -43,3 +48,4 @@ if __name__ == "__main__":
     test_url = "http://slowwly.robertomurray.co.uk/delay/2000/url/http://www.example.com"
     print(get_page(test_url))
     print(get_page(test_url))
+
