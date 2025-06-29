@@ -1,7 +1,7 @@
 -- top countries by fan count
 SELECT
     origin,
-    count(*) AS nb_fans
+    count(fans) AS nb_fans
 FROM
     metal_bands
 GROUP BY
