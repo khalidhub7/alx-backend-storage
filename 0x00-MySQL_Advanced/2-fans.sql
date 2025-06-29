@@ -1,3 +1,4 @@
+-- top countries by fan count
 SELECT
     origin,
     count(*) nb_fans
