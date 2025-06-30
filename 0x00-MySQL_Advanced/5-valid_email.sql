@@ -1,4 +1,4 @@
--- reset valid_email if email changes
+-- Reset valid_email if email changes
 DELIMITER ..
 
 CREATE TRIGGER clear_email_valid
@@ -10,4 +10,5 @@ BEGIN
     END IF;
 END;
 ..
+
 DELIMITER ;
