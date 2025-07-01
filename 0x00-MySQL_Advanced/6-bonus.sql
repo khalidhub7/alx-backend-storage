@@ -11,7 +11,7 @@ BEGIN
     SELECT id INTO project_id FROM projects 
     WHERE name = project_name;
 
-    IF project_id == NULL
+    IF project_id IS NULL
     THEN
         -- insert project if it doesn't exist
         INSERT INTO projects (name) VALUES (project_name);
@@ -19,11 +19,7 @@ BEGIN
         -- get the project ID
         SELECT id INTO project_id FROM projects 
         WHERE name = project_name;
-
-        -- insert correction
-        INSERT INTO corrections (user_id, project_id) 
-        VALUES (user_id, project_id);
-    END IF
+    END IF;
 
 
     -- insert correction with score
