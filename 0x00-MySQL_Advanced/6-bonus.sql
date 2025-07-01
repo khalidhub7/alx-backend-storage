@@ -16,9 +16,8 @@ BEGIN
 
     SELECT id INTO project_id FROM projects WHERE name = project_name;
 
-    UPDATE corrections c
-    SET c.score = new_score
-    WHERE c.user_id = user_id AND c.project_id = project_id;
+    INSERT INTO corrections (user_id, project_id, score)
+    VALUES (user_id, project_id, new_score)
 END
 ..
 
