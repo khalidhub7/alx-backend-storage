@@ -8,7 +8,8 @@ BEGIN
     DECLARE avg_score FLOAT;
 
     SET avg_score = (
-        SELECT AVG(score) FROM corrections WHERE user_id = user_id
+        SELECT AVG(score) FROM corrections 
+        WHERE user_id = ComputeAverageScoreForUser.user_id
     );
 
     UPDATE users
