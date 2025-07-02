@@ -1,17 +1,12 @@
--- creates an function
-DELIMITER ::
-
-CREATE FUNCTION SafeDiv(
-    a INT, 
-    b INT
-) RETURNS FLOAT
+-- safe divide, returns 0 if b is 0
+DELIMITER ..
+CREATE FUNCTION SafeDiv(IN a INT, IN b INT)
 DETERMINISTIC
+RETURNS FLOAT
 BEGIN
-    IF b = 0 THEN
+    IF b = 0 THEN 
         RETURN 0;
-    ELSE
-        RETURN a / b;
     END IF;
-END ::
-
+    RETURN a / b;
+END ..
 DELIMITER ;
