@@ -1,13 +1,15 @@
--- safe divide, returns 0 if b is 0
-
+-- script that creates a function SafeDiv that divides (and returns)
+-- the first by the second number or returns 0 if the second number is equal to 0.
 DROP FUNCTION IF EXISTS SafeDiv;
-DELIMITER ..
-CREATE FUNCTION SafeDiv(IN a INT, IN b INT)
-RETURNS FLOAT
+DELIMITER $$
+CREATE FUNCTION SafeDiv(a INT, b INT) 
+RETURNS INT AS $$
 BEGIN
-    IF b = 0 THEN 
+    IF b = 0 THEN
         RETURN 0;
+    ELSE
+        RETURN a / b;
     END IF;
-    RETURN a / b;
-END ..
-DELIMITER ;
+END;
+$$
+DELIMITER;
