@@ -3,12 +3,12 @@
 DROP PROCEDURE IF EXISTS ComputeAverageScoreForUser;
 
 DELIMITER ..
-CREATE PROCEDURE ComputeAverageScoreForUser(IN user_id INT)
+CREATE PROCEDURE ComputeAverageScoreForUser(IN userid INT)
 BEGIN
     DECLARE avg_score FLOAT;
 
     SET avg_score = (
-        SELECT AVG(score) FROM corrections.user_id WHERE user_id = user_id
+        SELECT AVG(score) FROM user_id WHERE user_id = userid
     );
 
     UPDATE users
