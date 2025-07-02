@@ -1,5 +1,8 @@
 -- students needing a meeting
 
+DROP FUNCTION IF EXISTS is_met_recently;
+DROP VIEW IF EXISTS need_meeting;
+
 -- returns 1 if no recent meeting
 DELIMITER ..
 CREATE FUNCTION is_met_recently(last_meeting DATE)
@@ -16,7 +19,6 @@ END ..
 DELIMITER ;
 
 -- view of students with low score and no recent meeting
-DROP VIEW IF EXISTS need_meeting;
 CREATE VIEW need_meeting AS
 SELECT name FROM students
 WHERE score < 80 AND is_met_recently(last_meeting);
