@@ -1,4 +1,5 @@
 -- safe divide, returns 0 if b is 0
+
 DROP FUNCTION IF EXISTS SafeDiv;
 DELIMITER ..
 CREATE FUNCTION SafeDiv(a INT, b INT)
