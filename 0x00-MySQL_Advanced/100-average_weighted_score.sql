@@ -1,16 +1,17 @@
--- Average weighted score 
--- SQL script that creates a stored procedure ComputeAverageWeightedScoreForUser
-DELIMITER //
+-- store the average weighted score for a student
+DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
+DELIMITER ..
 
-CREATE PROCEDURE ComputeAverageWeightedScoreForUser (IN user_id INT)
+CREATE PROCEDURE ComputeAverageWeightedScoreForUser(IN userid INT)
 BEGIN
-        SET @average := (SELECT
-            SUM(corrections.score * projects.weight) / SUM(projects.weight)
-            FROM corrections
-            INNER JOIN projects
-            ON projects.id = corrections.project_id
-            WHERE corrections.user_id = user_id);
-        UPDATE users SET average_score = @average WHERE users.id = user_id; 
-END //
+    UPDATE users
+    SET average_score = (
+        SELECT COALESCE(SUM(c.score * p.weight) / NULLIF(SUM(p.weight), 0), 0)
+        FROM corrections c
+        JOIN projects p ON c.project_id = p.id
+        WHERE c.user_id = userid
+    )
+    WHERE id = userid;
+END ..
 
 DELIMITER ;
