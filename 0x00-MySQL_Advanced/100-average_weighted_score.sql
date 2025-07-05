@@ -1,17 +1,17 @@
--- store the average weighted score for a student
+-- update user's weighted average score
 DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
 DELIMITER ..
 
 CREATE PROCEDURE ComputeAverageWeightedScoreForUser(IN userid INT)
 BEGIN
-    UPDATE users
-    SET average_score = (
-        SELECT COALESCE(SUM(c.score * p.weight) / NULLIF(SUM(p.weight), 0), 0)
-        FROM corrections c
-        JOIN projects p ON c.project_id = p.id
+    DECLARE avg_score FLOAT;
+    SET avg_score = (
+        SELECT (SUM(p.score * p.weight) / SUM(p.weight))
+        FROM projects p
+        INNER JOIN corrections c ON p.id = c.project_id
         WHERE c.user_id = userid
-    )
+    );
+    UPDATE users SET average_score = avg_score
     WHERE id = userid;
 END ..
-
 DELIMITER ;
