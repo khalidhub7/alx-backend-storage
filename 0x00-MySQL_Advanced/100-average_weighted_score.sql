@@ -1,4 +1,5 @@
 -- update user's weighted average score
+
 DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
 DELIMITER ..
 
@@ -8,6 +9,8 @@ BEGIN
     SET avg_score = (
         SELECT (SUM(c.score * p.weight) / SUM(p.weight))
         FROM projects p
+
+        -- keep only matched rows, avoid nulls
         INNER JOIN corrections c ON p.id = c.project_id
         WHERE c.user_id = userid
     );
