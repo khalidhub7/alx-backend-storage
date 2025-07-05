@@ -5,13 +5,22 @@ DELIMITER ..
 
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
-    
+
+    -- create indexes if missing to improve performance
+    CREATE INDEX IF NOT EXISTS idx_corrections_user_id 
+    ON corrections(user_id);
+    CREATE INDEX IF NOT EXISTS idx_corrections_project_id 
+    ON corrections(project_id);
+    CREATE INDEX IF NOT EXISTS idx_projects_id ON projects(id);
+
+    -- declare variables for user loop
     DECLARE current_id INT;
     DECLARE avg_score FLOAT;
     DECLARE done INT DEFAULT FALSE;
     DECLARE cur CURSOR FOR SELECT id FROM users;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+    -- iterate over users and update average score
     OPEN cur;
     read_loop: LOOP
         FETCH cur INTO current_id;
@@ -26,10 +35,9 @@ BEGIN
             WHERE c.user_id = current_id
         );
 
-        UPDATE users SET average_score = avg_score
+        UPDATE users SET average_score = avg_score 
         WHERE id = current_id;
     END LOOP;
-
     CLOSE cur;
 END ..
 DELIMITER ;
