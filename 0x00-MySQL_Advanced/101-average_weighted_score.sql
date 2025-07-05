@@ -6,13 +6,6 @@ DELIMITER ..
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
 
-    -- create indexes if missing to improve performance
-    CREATE INDEX IF NOT EXISTS idx_corrections_user_id 
-    ON corrections(user_id);
-    CREATE INDEX IF NOT EXISTS idx_corrections_project_id 
-    ON corrections(project_id);
-    CREATE INDEX IF NOT EXISTS idx_projects_id ON projects(id);
-
     -- declare variables for user loop
     DECLARE current_id INT;
     DECLARE avg_score FLOAT;
