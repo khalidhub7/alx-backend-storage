@@ -1,6 +1,6 @@
 // add new attr to doc in collection school
 db.school.update(
-    {'name': 'Holberton school'}, // like where
+    {'name': 'Holberton school'},
     {'$set': {'address': '972 Mission street'}},
     { multi: true }
 )
