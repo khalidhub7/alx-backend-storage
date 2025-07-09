@@ -1,3 +1,2 @@
-// create or use db
-
+// switch to my_db (creates on data insert)
 use my_db
