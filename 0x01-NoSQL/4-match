@@ -1,3 +1,2 @@
-// show db that match ...
-
-db.school.find({name: "Holberton school"})
+// find by name in collection
+db.school.find({'name': 'ALX'})
