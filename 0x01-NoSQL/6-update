@@ -1,5 +1,5 @@
-// add new attr to doc in collection school
-db.school.updateMany(
-    {'name': 'Holberton school'},
-    {'$set': {'address': '972 Mission street'}}
+// Add new attr to doc in collection school
+db.school.update(
+  { name: "Holberton school" },
+  { $set: { address: "972 Mission street" } }
 )
