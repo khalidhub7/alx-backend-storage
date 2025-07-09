@@ -1,6 +1,5 @@
 // add new attr to doc in collection school
-db.school.updateMany(
+db.school.update(
     {'name': 'Holberton school'}, // like where
-    {'$set': {'address': '972 Mission street'}},
-    { multi: true }
+    {'$set': {'address': '972 Mission street'}}
 )
