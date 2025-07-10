@@ -5,6 +5,8 @@ from pymongo import MongoClient
 
 def show_logs():
     """ shows nginx logs stats from mongodb """
+    # make sure to restore backup
+    # mongorestore dump
 
     # connect to logs.nginx collection
     client = MongoClient()
