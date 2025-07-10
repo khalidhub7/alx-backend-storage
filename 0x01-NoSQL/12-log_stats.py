@@ -30,11 +30,11 @@ def show_logs():
     print(
         f"{docs_len} logs\n"
         f"Methods:\n"
-        f"\tmethod GET: {methods_count['GET']}\n"
-        f"\tmethod POST: {methods_count['POST']}\n"
-        f"\tmethod PUT: {methods_count['PUT']}\n"
-        f"\tmethod PATCH: {methods_count['PATCH']}\n"
-        f"\tmethod DELETE: {methods_count['DELETE']}\n"
+        f"method GET: {methods_count['GET']}\n"
+        f"method POST: {methods_count['POST']}\n"
+        f"method PUT: {methods_count['PUT']}\n"
+        f"method PATCH: {methods_count['PATCH']}\n"
+        f"method DELETE: {methods_count['DELETE']}\n"
         f"{status_check} status check"
     )
 
