@@ -1,20 +1,43 @@
 #!/usr/bin/env python3
-"""
-Python script that provides some stats
-about Nginx logs stored in MongoDB """
-import pymongo
+""" pymongo basics """
+from pymongo import MongoClient
+
+
+def show_logs():
+    """ shows nginx logs stats from mongodb """
+
+    # connect to logs.nginx collection
+    client = MongoClient()
+    db = client['logs']
+    collection = db['nginx']
+
+    # count all docs and GET /status logs
+    docs_len = collection.count_documents({})
+    status_check = collection.count_documents(
+        {'path': {'$in': ['/status']}, 'method': 'GET'}
+    )
+
+    # count docs per HTTP method
+    methods_count = {
+        "GET": 0, "POST": 0, "PUT": 0, "PATCH": 0, "DELETE": 0
+    }
+    for k in methods_count:
+        methods_count[k] = collection.count_documents(
+            {'method': k}
+        )
+
+    # print log counts and method stats
+    print(
+        f"{docs_len} logs\n"
+        f"Methods:\n"
+        f"\tmethod GET: {methods_count['GET']}\n"
+        f"\tmethod POST: {methods_count['POST']}\n"
+        f"\tmethod PUT: {methods_count['PUT']}\n"
+        f"\tmethod PATCH: {methods_count['PATCH']}\n"
+        f"\tmethod DELETE: {methods_count['DELETE']}\n"
+        f"{status_check} status check"
+    )
+
+
 if __name__ == "__main__":
-    myclient = pymongo.MongoClient(
-        "mongodb://127.0.0.1:27017")
-    mydb = myclient.logs
-    mycol = mydb.nginx
-    print("{} logs".format(
-        mycol.count_documents({})))
-    print("Methods:")
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-    for m in methods:
-        print("\tmethod {}: {}".format(
-            m, mycol.count_documents({"method": m})))
-    print("{} status check".format(
-        mycol.count_documents(
-            {"method": "GET", "path": "/status"})))
+    show_logs()
