@@ -1,30 +1,43 @@
 #!/usr/bin/env python3
-''' Task 12. Log stats
-'''
+""" pymongo basics """
 from pymongo import MongoClient
 
 
-def print_nginx_request_logs(nginx_collection):
-    ''' Script that provides some stats about Nginx logs stored in MongoDB.
-    '''
-    print('{} logs'.format(nginx_collection.count_documents({})))
-    print('Methods:')
-    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-    for method in methods:
-        req_count = len(list(nginx_collection.find({'method': method})))
-        print('\tmethod {}: {}'.format(method, req_count))
-    status_checks_count = len(list(
-        nginx_collection.find({'method': 'GET', 'path': '/status'})
-    ))
-    print('{} status check'.format(status_checks_count))
+def show_logs():
+    """ shows nginx logs stats from mongodb """
+
+    # connect to logs.nginx collection
+    client = MongoClient()
+    db = client['logs']
+    collection = db['nginx']
+
+    # count all docs and GET /status logs
+    docs_len = collection.count_documents({})
+    status_check = collection.count_documents(
+        {'path': {'$in': ['/status']}, 'method': 'GET'}
+    )
+
+    # count docs per HTTP method
+    methods_count = {
+        "GET": 0, "POST": 0, "PUT": 0, "PATCH": 0, "DELETE": 0
+    }
+    for k in methods_count:
+        methods_count[k] = collection.count_documents(
+            {'method': k}
+        )
+
+    # print log counts and method stats
+    print(
+        f"{docs_len} logs\n"
+        f"Methods:\n"
+        f"\tmethod GET: {methods_count['GET']}\n"
+        f"\tmethod POST: {methods_count['POST']}\n"
+        f"\tmethod PUT: {methods_count['PUT']}\n"
+        f"\tmethod PATCH: {methods_count['PATCH']}\n"
+        f"\tmethod DELETE: {methods_count['DELETE']}\n"
+        f"{status_check} status check"
+    )
 
 
-def run():
-    '''Provides some stats about Nginx logs stored in MongoDB.
-    '''
-    client = MongoClient('mongodb://127.0.0.1:27017')
-    print_nginx_request_logs(client.logs.nginx)
-
-
-if __name__ == '__main__':
-    run()
+if __name__ == "__main__":
+    show_logs()
