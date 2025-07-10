@@ -3,9 +3,8 @@
 
 
 def schools_by_topic(mongo_collection, topic):
-    """
-search by topic
-    """
-    find = mongo_collection.find(
-        {'topics': topic})
-    return find
+    """ find by toobic """
+
+    return list(mongo_collection.find(
+        {'topics': {'$in': [topic]}}
+    ))
