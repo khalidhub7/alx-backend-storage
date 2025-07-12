@@ -32,13 +32,10 @@ def show_logs():
     print(
         f"{docs_len} logs\n"
         f"Methods:\n"
-        f"\tmethod GET: {methods_count['GET']}\n"
-        f"\tmethod POST: {methods_count['POST']}\n"
-        f"\tmethod PUT: {methods_count['PUT']}\n"
-        f"\tmethod PATCH: {methods_count['PATCH']}\n"
-        f"\tmethod DELETE: {methods_count['DELETE']}\n"
-        f"{status_check} status check"
     )
+    for m in methods_count:
+        print(f"\tmethod {m}: {methods_count[m]}\n")
+    print(f"{status_check} status check")
 
     # most present IPs in the collection
     top_ten = collection.aggregate([
