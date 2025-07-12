@@ -31,10 +31,10 @@ def show_logs():
     # print log counts and method stats
     print(
         f"{docs_len} logs\n"
-        f"Methods:\n"
+        f"Methods:"
     )
     for m in methods_count:
-        print(f"\tmethod {m}: {methods_count[m]}\n")
+        print(f"    method {m}: {methods_count[m]}")
     print(f"{status_check} status check")
 
     # most present IPs in the collection
@@ -44,7 +44,7 @@ def show_logs():
     ])
     print('IPs:')
     for i in top_ten:
-        print(f"\t{i['_id']}: {i['count']}")
+        print(f"    {i['_id']}: {i['count']}")
 
 
 if __name__ == "__main__":
